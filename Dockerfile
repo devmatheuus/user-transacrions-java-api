@@ -1,8 +1,17 @@
-FROM maven:3.9.4-eclipse-temurin as build
-COPY . .
-RUN mvn clean package -DskipTests
+FROM ubuntu:latest AS build
 
-FROM openjdk:20
-COPY --from=build /target/user-transactions-api-0.0.1.jar user-transactions-api.jar
+RUN apt-get update
+RUN apt-get install openjdk-17-jdk -y
+
+COPY . .
+
+RUN apt-get install maven -y
+RUN mvn clean install
+
+FROM openjdk:17-jdk-slim
+
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "user-transactions-api.jar"]
+
+COPY --from=build /target/user-transactions-api-1.0.0.jar user-transactions-api.jar
+
+ENTRYPOINT ["java","-jar","/user-transactions-api.jar"]
