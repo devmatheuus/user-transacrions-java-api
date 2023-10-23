@@ -1,17 +1,9 @@
-FROM ubuntu:latest AS build
-
-RUN apt-get update
-RUN apt-get install openjdk-17-jdk -y
-
+FROM maven:3.9.2-eclipse-temurin-20-alpine AS build
 COPY . .
 
-RUN apt-get install maven -y
-RUN mvn clean install
-
-FROM openjdk:17-jdk-slim
+RUN mvn clean package -DskipTests
+FROM openjdk:20
+COPY --from=build /target/user-transactions-api-0.0.1-SNAPSHOT.jar user-transactions-api.jar
 
 EXPOSE 8080
-
-COPY --from=build /target/user-transactions-api-1.0.0.jar user-transactions-api.jar
-
-ENTRYPOINT ["java","-jar","/user-transactions-api.jar"]
+ENTRYPOINT ["java","-jar","user-transactions-api.jar"]
